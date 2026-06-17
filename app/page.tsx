@@ -209,7 +209,7 @@ export default function Home() {
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-4">
                 <p className="text-zinc-400 text-sm">
-                  📄 Documents
+                 ? Questions
                 </p>
                 <h3 className="text-5xl font-bold">
                   {questionCount}
