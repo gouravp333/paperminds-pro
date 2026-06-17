@@ -46,7 +46,7 @@ uvicorn main:app --reload
 
 ### Dashboard
 
-![Dashboard](Screenshots)
+![Dashboard](Screenshots/dashboard.png)
 
 ### PDF Upload
 
