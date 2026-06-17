@@ -1,65 +1,374 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import axios from "axios";
+import {
+  Upload,
+  FileText,
+  Sparkles,
+  Send,
+} from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 export default function Home() {
+  const [file, setFile] = useState<File | null>(null);
+  const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const askQuestion = async () => {
+    if (!file) {
+      alert("Please upload a PDF first");
+      return;
+    }
+
+    if (!question.trim()) return;
+
+    const currentQuestion = question;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: currentQuestion,
+      },
+    ]);
+
+    setQuestion("");
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("question", currentQuestion);
+
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/ask",
+        formData
+      );
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: res.data.answer,
+        },
+      ]);
+
+      setQuestionCount((prev) => prev + 1);
+    } catch (error) {
+      console.error(error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Failed to generate answer.",
+        },
+      ]);
+    }
+
+    setLoading(false);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#0B1020] text-white">
+      <div className="flex min-h-screen">
+
+        {/* Sidebar */}
+
+        <aside className="w-80 min-h-screen border-r border-white/10 p-6">
+
+         <h1 className="text-3xl font-bold mb-8 whitespace-nowrap">
+  🧠 PaperMinds PRO
+</h1>
+
+          {/* Upload */}
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
+            <CardContent className="p-5">
+
+              <div className="flex items-center gap-2 mb-4">
+                <Upload size={18} />
+                <span className="font-medium">
+                  Upload PDF
+                </span>
+              </div>
+
+              <label htmlFor="pdf-upload">
+
+                <div className="cursor-pointer rounded-xl border-2 border-dashed border-indigo-500 p-6 text-center hover:bg-indigo-500/10 transition">
+
+                  <Upload
+                    className="mx-auto mb-3 text-indigo-400"
+                    size={32}
+                  />
+
+                  <p className="font-semibold">
+                    Click to Upload PDF
+                  </p>
+
+                  <p className="text-xs text-zinc-400 mt-2">
+                    Research Papers, Reports,
+                    Notes
+                  </p>
+
+                </div>
+
+              </label>
+
+              <input
+                id="pdf-upload"
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={(e) =>
+                  setFile(
+                    e.target.files?.[0] || null
+                  )
+                }
+              />
+
+              {file && (
+                <div className="mt-4 rounded-lg bg-indigo-500/10 border border-indigo-500/20 p-3">
+
+                  <div className="flex items-center gap-2">
+
+                    <FileText size={16} />
+
+                    <span className="text-sm truncate">
+                      {file.name}
+                    </span>
+
+                  </div>
+
+                </div>
+              )}
+
+            </CardContent>
+          </Card>
+
+          {/* Status */}
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+            <CardContent className="p-4">
+
+              <div className="flex gap-2 items-center">
+                <Sparkles size={18} />
+                <span>AI Status</span>
+              </div>
+
+              <p className="text-green-400 mt-3">
+                Online
+              </p>
+
+            </CardContent>
+          </Card>
+
+        </aside>
+
+        {/* Main */}
+
+        <main className="flex-1 p-10 overflow-y-auto">
+
+          <h2 className="text-5xl font-bold mb-3">
+  PaperMinds PRO
+</h2>
+
+<p className="text-zinc-400 mb-8">
+  AI-powered research assistant for analyzing,
+  summarizing, and understanding academic documents.
+</p>
+
+          {/* Stats */}
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardContent className="p-4">
+                <p className="text-zinc-400 text-sm">
+                  📄 Documents
+                </p>
+                <h3 className="text-5xl font-bold">
+                  {file ? 1 : 0}
+                </h3>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardContent className="p-4">
+                <p className="text-zinc-400 text-sm">
+                  📄 Documents
+                </p>
+                <h3 className="text-5xl font-bold">
+                  {questionCount}
+                </h3>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardContent className="p-4">
+                <p className="text-zinc-400 text-sm">
+                  🟢 Status
+                </p>
+                <h3 className="text-green-400 font-bold">
+                  Online
+                </h3>
+              </CardContent>
+            </Card>
+
+          </div>
+
+          {/* Ask */}
+
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10 mb-6">
+            <CardContent className="p-6">
+
+              <Textarea
+                placeholder="Ask anything about your document..."
+                value={question}
+                onChange={(e) =>
+                  setQuestion(e.target.value)
+                }
+                className="bg-[#0B1020] border-zinc-700 min-h-[120px]"
+              />
+
+              <Button
+                onClick={askQuestion}
+               className="mt-4 bg-indigo-600 hover:bg-indigo-700 px-8"
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Ask AI
+              </Button>
+
+            </CardContent>
+          </Card>
+
+          {/* Chat */}
+
+          <div className="space-y-4">
+
+            {messages.map((msg, index) => (
+
+              <div
+                key={index}
+                className={`p-5 rounded-2xl max-w-4xl ${
+  msg.role === "user"
+    ? "bg-indigo-600 ml-auto"
+    : "bg-white/5 backdrop-blur-xl border border-white/10"
+}`}
+                
+              >
+
+                <div className="font-semibold mb-2">
+                  {msg.role === "user"
+  ? "👤 You"
+  : "🤖 PaperMinds AI"}
+                </div>
+
+                <div className="whitespace-pre-wrap">
+                  {msg.content}
+                </div>
+
+              </div>
+
+            ))}
+
+            {loading && (
+
+              <div className="bg-white/5 backdrop-blur-xl p-5 rounded-2xl">
+
+                <div className="font-semibold mb-2">
+                  PaperMinds PRO
+                </div>
+
+                <div>
+                  Analyzing document...
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
+
+        </main>
+        <aside className="w-72 border-l border-white/10 p-6 bg-white/5 backdrop-blur-xl">
+
+  <h2 className="text-xl font-bold mb-6">
+    Research Insights
+  </h2>
+
+  <Card className="bg-white/5 border-white/10 mb-4">
+    <CardContent className="p-4">
+      <h3 className="font-semibold mb-2">
+        Current Document
+      </h3>
+
+      <p className="text-sm text-zinc-400 break-words">
+        {file ? file.name : "No document uploaded"}
+      </p>
+    </CardContent>
+  </Card>
+
+  <Card className="bg-white/5 border-white/10 mb-4">
+    <CardContent className="p-4">
+      <h3 className="font-semibold mb-3">
+        Statistics
+      </h3>
+
+      <div className="space-y-2 text-sm">
+
+        <div className="flex justify-between">
+          <span>Documents</span>
+          <span>{file ? 1 : 0}</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="flex justify-between">
+          <span>Questions</span>
+          <span>{questionCount}</span>
         </div>
-      </main>
+
+        <div className="flex justify-between">
+          <span>Status</span>
+          <span className="text-green-400">
+            Online
+          </span>
+        </div>
+
+      </div>
+    </CardContent>
+  </Card>
+
+  <Card className="bg-white/5 border-white/10">
+    <CardContent className="p-4">
+      <h3 className="font-semibold mb-3">
+        Features
+      </h3>
+
+      <ul className="space-y-2 text-sm text-zinc-400">
+        <li>✓ Document Intelligence</li>
+        <li>✓ AI Summarization</li>
+        <li>✓ Context-Aware Q&A</li>
+        <li>✓ Research Insights</li>
+      </ul>
+    </CardContent>
+  </Card>
+
+</aside>
+
+      </div>
     </div>
   );
 }
