@@ -46,15 +46,15 @@ uvicorn main:app --reload
 
 ### Dashboard
 
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](Screenshots/dashboard.png)
 
 ### PDF Upload
 
-![Upload](screenshots/upload.png)
+![Upload](Screenshots/upload.png)
 
 ### AI Response
 
-![Chat](screenshots/chat.png)
+![Chat](Screenshots/chat.png)
 ## Author
 
 Gourav P
