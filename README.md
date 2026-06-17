@@ -44,11 +44,18 @@ uvicorn main:app --reload
 
 ## Screenshots
 
-* Dashboard
-* PDF Upload
-* AI Responses
-* Research Insights
+### Dashboard
 
+![Dashboard](screenshots/dashboard.png)
+
+### PDF Upload
+
+![Upload](screenshots/upload.png)
+
+### AI Response
+
+![Chat](screenshots/chat.png)
 ## Author
 
 Gourav P
+
